@@ -1,7 +1,7 @@
 //=================================================================================================
 /*!
-//  \file blazetest/utiltest/ThrowingResource.h
-//  \brief Header file for the ThrowingResource class
+//  \file blaze/util/algorithms/stubs/DestroyAt.h
+//  \brief Headerfile for the stub for the std::destroy_at algorithm
 //
 //  Copyright (C) 2012-2018 Klaus Iglberger - All Rights Reserved
 //
@@ -32,74 +32,34 @@
 */
 //=================================================================================================
 
-#ifndef _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
-#define _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
+#ifndef _BLAZE_UTIL_ALGORITHMS_STUBS_DESTROYAT_H_
+#define _BLAZE_UTIL_ALGORITHMS_STUBS_DESTROYAT_H_
 
 
-//*************************************************************************************************
-// Includes
-//*************************************************************************************************
-
-#include <stdexcept>
-#include <blaze/util/StaticAssert.h>
-#include <blaze/util/typetraits/AlignmentOf.h>
-#include <blazetest/utiltest/InstanceCounter.h>
-
-
-namespace blazetest {
-
-namespace utiltest {
+namespace std {
 
 //=================================================================================================
 //
-//  CLASS DEFINITION
+//  DESTROY_AT ALGORITHM
 //
 //=================================================================================================
 
 //*************************************************************************************************
-/*!\brief Implementation of an instance counted resource that throws during construction.
+/*!\brief Destroys the object at the given address.
+// \ingroup algorithms
 //
-// The ThrowingResource class represents an important resource for testing purposes. It is instance
-// counted via the InstanceCounter class and guaranteed to be 16-bit aligned. Additionally, it
-// throws an exception during the construction of the 7th instance.
+// \param p The address of the object to be destroyed.
+// \return void
+//
+// This function explicitly calls the destructor of the object at the given address.
 */
-class alignas( 16UL ) ThrowingResource
-   : public InstanceCounter<ThrowingResource>
+template< typename T >
+void destroy_at( T* p ) noexcept
 {
- public:
-   //**Constructors********************************************************************************
-   /*!\name Constructors */
-   //@{
-   inline ThrowingResource();
-   //@}
-   //**********************************************************************************************
-};
-//*************************************************************************************************
-
-
-
-
-//=================================================================================================
-//
-//  CONSTRUCTOR
-//
-//=================================================================================================
-
-//*************************************************************************************************
-/*!\brief The constructor of ThrowingResource.
-*/
-inline ThrowingResource::ThrowingResource()
-   : InstanceCounter<ThrowingResource>()
-{
-   BLAZE_STATIC_ASSERT( blaze::AlignmentOf<ThrowingResource>::value == 16UL );
-
-   if( getCount() == 7U )
-      throw std::runtime_error( "Runtime error for testing purposes" );
+   p->~T();
 }
 //*************************************************************************************************
 
-} // namespace utiltest
-
-} // namespace blazetest
+} // namespace std
 
 #endif

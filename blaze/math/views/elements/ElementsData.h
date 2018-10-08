@@ -41,7 +41,7 @@
 //*************************************************************************************************
 
 #include <blaze/util/Assert.h>
-#include <blaze/util/SmallVector.h>
+#include <blaze/util/SmallArray.h>
 #include <blaze/util/Types.h>
 #include <blaze/util/Unused.h>
 
@@ -125,9 +125,11 @@ struct ElementsData
 
 //*************************************************************************************************
 /*! \cond BLAZE_INTERNAL */
+#if BLAZE_CPP14_MODE
 // Definition and initialization of the static member variables
 template< size_t... CEAs >  // Compile time element arguments
 constexpr typename ElementsData<CEAs...>::Indices ElementsData<CEAs...>::indices_;
+#endif
 /*! \endcond */
 //*************************************************************************************************
 
@@ -216,7 +218,7 @@ struct ElementsData<>
 {
  public:
    //**Type definitions****************************************************************************
-   using Indices = SmallVector<size_t,8UL>;  //!< Type of the container for element indices.
+   using Indices = SmallArray<size_t,8UL>;  //!< Type of the container for element indices.
    //**********************************************************************************************
 
    //**Constructors********************************************************************************

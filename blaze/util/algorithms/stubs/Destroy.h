@@ -1,7 +1,7 @@
 //=================================================================================================
 /*!
-//  \file blazetest/utiltest/ThrowingResource.h
-//  \brief Header file for the ThrowingResource class
+//  \file blaze/util/algorithms/stubs/Destroy.h
+//  \brief Headerfile for the stub for the std::destroy algorithm
 //
 //  Copyright (C) 2012-2018 Klaus Iglberger - All Rights Reserved
 //
@@ -32,74 +32,45 @@
 */
 //=================================================================================================
 
-#ifndef _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
-#define _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
+#ifndef _BLAZE_UTIL_ALGORITHMS_STUBS_DESTROY_H_
+#define _BLAZE_UTIL_ALGORITHMS_STUBS_DESTROY_H_
 
 
 //*************************************************************************************************
 // Includes
 //*************************************************************************************************
 
-#include <stdexcept>
-#include <blaze/util/StaticAssert.h>
-#include <blaze/util/typetraits/AlignmentOf.h>
-#include <blazetest/utiltest/InstanceCounter.h>
+#include <memory>
+#include <blaze/util/algorithms/DestroyAt.h>
 
 
-namespace blazetest {
-
-namespace utiltest {
+namespace std {
 
 //=================================================================================================
 //
-//  CLASS DEFINITION
+//  DESTROY ALGORITHM
 //
 //=================================================================================================
 
 //*************************************************************************************************
-/*!\brief Implementation of an instance counted resource that throws during construction.
+/*!\brief Destroys the given range of objects .
+// \ingroup algorithms
 //
-// The ThrowingResource class represents an important resource for testing purposes. It is instance
-// counted via the InstanceCounter class and guaranteed to be 16-bit aligned. Additionally, it
-// throws an exception during the construction of the 7th instance.
+// \param first Iterator to the first element to be destroyed.
+// \param last Iterator to the element one past the last element to be destroyed.
+// \return void
+//
+// This function explicitly calls the destructor of all object in the given range.
 */
-class alignas( 16UL ) ThrowingResource
-   : public InstanceCounter<ThrowingResource>
+template< typename ForwardIt >
+void destroy( ForwardIt first, ForwardIt last )
 {
- public:
-   //**Constructors********************************************************************************
-   /*!\name Constructors */
-   //@{
-   inline ThrowingResource();
-   //@}
-   //**********************************************************************************************
-};
-//*************************************************************************************************
-
-
-
-
-//=================================================================================================
-//
-//  CONSTRUCTOR
-//
-//=================================================================================================
-
-//*************************************************************************************************
-/*!\brief The constructor of ThrowingResource.
-*/
-inline ThrowingResource::ThrowingResource()
-   : InstanceCounter<ThrowingResource>()
-{
-   BLAZE_STATIC_ASSERT( blaze::AlignmentOf<ThrowingResource>::value == 16UL );
-
-   if( getCount() == 7U )
-      throw std::runtime_error( "Runtime error for testing purposes" );
+   for( ; first!=last; ++first ) {
+      destroy_at( std::addressof( *first ) );
+   }
 }
 //*************************************************************************************************
 
-} // namespace utiltest
-
-} // namespace blazetest
+} // namespace std
 
 #endif

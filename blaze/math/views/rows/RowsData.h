@@ -41,7 +41,7 @@
 //*************************************************************************************************
 
 #include <blaze/util/Assert.h>
-#include <blaze/util/SmallVector.h>
+#include <blaze/util/SmallArray.h>
 #include <blaze/util/Types.h>
 #include <blaze/util/Unused.h>
 
@@ -119,9 +119,11 @@ struct RowsData
 
 //*************************************************************************************************
 /*! \cond BLAZE_INTERNAL */
+#if BLAZE_CPP14_MODE
 // Definition and initialization of the static member variables
 template< size_t... CRAs >  // Compile time row arguments
 constexpr typename RowsData<CRAs...>::Indices RowsData<CRAs...>::indices_;
+#endif
 /*! \endcond */
 //*************************************************************************************************
 
@@ -210,7 +212,7 @@ struct RowsData<>
 {
  public:
    //**Type definitions****************************************************************************
-   using Indices = SmallVector<size_t,8UL>;  //!< Type of the container for row indices.
+   using Indices = SmallArray<size_t,8UL>;  //!< Type of the container for row indices.
    //**********************************************************************************************
 
    //**Constructors********************************************************************************

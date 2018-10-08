@@ -1,7 +1,7 @@
 //=================================================================================================
 /*!
-//  \file blazetest/utiltest/ThrowingResource.h
-//  \brief Header file for the ThrowingResource class
+//  \file blaze/system/Standard.h
+//  \brief C++-standard-specific system settings
 //
 //  Copyright (C) 2012-2018 Klaus Iglberger - All Rights Reserved
 //
@@ -32,48 +32,44 @@
 */
 //=================================================================================================
 
-#ifndef _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
-#define _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
+#ifndef _BLAZE_SYSTEM_STANDARD_H_
+#define _BLAZE_SYSTEM_STANDARD_H_
 
 
 //*************************************************************************************************
 // Includes
 //*************************************************************************************************
 
-#include <stdexcept>
 #include <blaze/util/StaticAssert.h>
-#include <blaze/util/typetraits/AlignmentOf.h>
-#include <blazetest/utiltest/InstanceCounter.h>
 
 
-namespace blazetest {
 
-namespace utiltest {
 
 //=================================================================================================
 //
-//  CLASS DEFINITION
+//  C++ STANDARD MACRO DEFINITIONS
 //
 //=================================================================================================
 
 //*************************************************************************************************
-/*!\brief Implementation of an instance counted resource that throws during construction.
-//
-// The ThrowingResource class represents an important resource for testing purposes. It is instance
-// counted via the InstanceCounter class and guaranteed to be 16-bit aligned. Additionally, it
-// throws an exception during the construction of the 7th instance.
-*/
-class alignas( 16UL ) ThrowingResource
-   : public InstanceCounter<ThrowingResource>
-{
- public:
-   //**Constructors********************************************************************************
-   /*!\name Constructors */
-   //@{
-   inline ThrowingResource();
-   //@}
-   //**********************************************************************************************
-};
+/*! \cond BLAZE_INTERNAL */
+#if ( __cplusplus >= 201402L && __cplusplus < 201703L ) || ( _MSVC_LANG >= 201402L && _MSVC_LANG < 201703L )
+#  define BLAZE_CPP14_MODE 1
+#else
+#  define BLAZE_CPP14_MODE 0
+#endif
+/*! \endcond */
+//*************************************************************************************************
+
+
+//*************************************************************************************************
+/*! \cond BLAZE_INTERNAL */
+#if ( __cplusplus >= 201703L ) || ( _MSVC_LANG >= 201703L )
+#  define BLAZE_CPP17_MODE 1
+#else
+#  define BLAZE_CPP17_MODE 0
+#endif
+/*! \endcond */
 //*************************************************************************************************
 
 
@@ -81,25 +77,19 @@ class alignas( 16UL ) ThrowingResource
 
 //=================================================================================================
 //
-//  CONSTRUCTOR
+//  COMPILE TIME CONSTRAINTS
 //
 //=================================================================================================
 
 //*************************************************************************************************
-/*!\brief The constructor of ThrowingResource.
-*/
-inline ThrowingResource::ThrowingResource()
-   : InstanceCounter<ThrowingResource>()
-{
-   BLAZE_STATIC_ASSERT( blaze::AlignmentOf<ThrowingResource>::value == 16UL );
+/*! \cond BLAZE_INTERNAL */
+namespace {
 
-   if( getCount() == 7U )
-      throw std::runtime_error( "Runtime error for testing purposes" );
+BLAZE_STATIC_ASSERT( BLAZE_CPP14_MODE || BLAZE_CPP17_MODE );
+BLAZE_STATIC_ASSERT( !BLAZE_CPP14_MODE || !BLAZE_CPP17_MODE );
+
 }
+/*! \endcond */
 //*************************************************************************************************
-
-} // namespace utiltest
-
-} // namespace blazetest
 
 #endif

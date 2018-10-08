@@ -40,8 +40,9 @@
 // Includes
 //*************************************************************************************************
 
+#include <blaze/system/Standard.h>
 #include <blaze/util/Assert.h>
-#include <blaze/util/SmallVector.h>
+#include <blaze/util/SmallArray.h>
 #include <blaze/util/Types.h>
 #include <blaze/util/Unused.h>
 
@@ -119,9 +120,11 @@ struct ColumnsData
 
 //*************************************************************************************************
 /*! \cond BLAZE_INTERNAL */
+#if BLAZE_CPP14_MODE
 // Definition and initialization of the static member variables
 template< size_t... CCAs >  // Compile time column arguments
 constexpr typename ColumnsData<CCAs...>::Indices ColumnsData<CCAs...>::indices_;
+#endif
 /*! \endcond */
 //*************************************************************************************************
 
@@ -210,7 +213,7 @@ struct ColumnsData<>
 {
  public:
    //**Type definitions****************************************************************************
-   using Indices = SmallVector<size_t,8UL>;  //!< Type of the container for column indices.
+   using Indices = SmallArray<size_t,8UL>;  //!< Type of the container for column indices.
    //**********************************************************************************************
 
    //**Constructors********************************************************************************

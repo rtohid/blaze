@@ -1,7 +1,7 @@
 //=================================================================================================
 /*!
-//  \file blazetest/utiltest/InstanceCounter.h
-//  \brief Header file for InstanceCounter class template
+//  \file blazetest/utiltest/IntResource.h
+//  \brief Header file for the IntResource class
 //
 //  Copyright (C) 2012-2018 Klaus Iglberger - All Rights Reserved
 //
@@ -32,8 +32,15 @@
 */
 //=================================================================================================
 
-#ifndef _BLAZETEST_UTILTEST_INSTANCECOUNTER_H_
-#define _BLAZETEST_UTILTEST_INSTANCECOUNTER_H_
+#ifndef _BLAZETEST_UTILTEST_INTRESOURCE_H_
+#define _BLAZETEST_UTILTEST_INTRESOURCE_H_
+
+
+//*************************************************************************************************
+// Includes
+//*************************************************************************************************
+
+#include <blazetest/utiltest/InstanceCounter.h>
 
 
 namespace blazetest {
@@ -47,54 +54,26 @@ namespace utiltest {
 //=================================================================================================
 
 //*************************************************************************************************
-/*!\brief Base class for classes requiring an instance counter.
+/*!\brief Implementation of an instance counted integer resource.
 //
-// The InstanceCounter class template provides the functionality to count the number of instances
-// created from a particular class. The functionality can be used by either deriving publicly
-// (providing public access to the instance counter) or non-publicly (hiding access to the
-// instance counter) from the InstanceCounter class. The InstanceCounter class template requires
-// the deriving class as template argument (CRTP pattern):
-
-   \code
-   class Resource : public InstanceCounter<Resource>
-   {
-      // ...
-   };
-   \endcode
+// The IntResource class represents an important resource for testing purposes. It wraps a value
+// of type 'int' and is instance counted via the InstanceCounter class.
 */
-template< typename T >
-class InstanceCounter
+class IntResource
+   : public InstanceCounter<IntResource>
 {
- protected:
+ public:
    //**Constructors********************************************************************************
    /*!\name Constructors */
    //@{
-   inline InstanceCounter() noexcept;
-   inline InstanceCounter( const InstanceCounter& ) noexcept;
-   inline InstanceCounter( InstanceCounter&& ) noexcept;
+   inline IntResource( int value = 0 ) noexcept;
    //@}
    //**********************************************************************************************
 
-   //**Destructor**********************************************************************************
-   /*!\name Destructor */
-   //@{
-   inline ~InstanceCounter();
-   //@}
-   //**********************************************************************************************
-
-   //**Assignment operators************************************************************************
-   /*!\name Assignment operators */
-   //@{
-   InstanceCounter& operator=( const InstanceCounter& ) = default;
-   InstanceCounter& operator=( InstanceCounter&& ) = default;
-   //@}
-   //**********************************************************************************************
-
- public:
    //**Utility functions***************************************************************************
    /*!\name Utility functions */
    //@{
-   static inline unsigned int getCount() noexcept;
+   inline operator int() const noexcept;
    //@}
    //**********************************************************************************************
 
@@ -102,7 +81,7 @@ class InstanceCounter
    //**Member variables****************************************************************************
    /*!\name Member variables */
    //@{
-   static unsigned int counter_;  // The instance counter.
+   int value_;  // The value of the integer resource.
    //@}
    //**********************************************************************************************
 };
@@ -118,54 +97,14 @@ class InstanceCounter
 //=================================================================================================
 
 //*************************************************************************************************
-/*!\brief The default constructor of InstanceCounter.
-*/
-template< typename T >
-inline InstanceCounter<T>::InstanceCounter() noexcept
-{
-   ++counter_;
-}
-//*************************************************************************************************
-
-
-//*************************************************************************************************
-/*!\brief The copy constructor of InstanceCounter.
-*/
-template< typename T >
-inline InstanceCounter<T>::InstanceCounter( const InstanceCounter& ) noexcept
-{
-   ++counter_;
-}
-//*************************************************************************************************
-
-
-//*************************************************************************************************
-/*!\brief The move constructor of InstanceCounter.
-*/
-template< typename T >
-inline InstanceCounter<T>::InstanceCounter( InstanceCounter&& ) noexcept
-{
-   ++counter_;
-}
-//*************************************************************************************************
-
-
-
-
-//=================================================================================================
+/*!\brief The constructor of IntResource.
 //
-//  DESTRUCTOR
-//
-//=================================================================================================
-
-//*************************************************************************************************
-/*!\brief The destructor of InstanceCounter.
+// \param value The initial value of the integer resource.
 */
-template< typename T >
-inline InstanceCounter<T>::~InstanceCounter()
-{
-   --counter_;
-}
+inline IntResource::IntResource( int value ) noexcept
+   : InstanceCounter<IntResource>()  // Initialization of the base class
+   , value_( value )                 // The value of the integer resource
+{}
 //*************************************************************************************************
 
 
@@ -178,28 +117,15 @@ inline InstanceCounter<T>::~InstanceCounter()
 //=================================================================================================
 
 //*************************************************************************************************
-/*!\brief Returns the current count of instances.
+/*!\brief Returns the current value of the resource.
 //
-// \return The current count of instances.
+// \return The current value of the resource.
 */
-template< typename T >
-inline unsigned int InstanceCounter<T>::getCount() noexcept
+inline IntResource::operator int() const noexcept
 {
-   return counter_;
+   return value_;
 }
 //*************************************************************************************************
-
-
-
-
-//=================================================================================================
-//
-//  DEFINITION AND INITIALIZATION OF THE STATIC MEMBER VARIABLES
-//
-//=================================================================================================
-
-template< typename T >
-unsigned int InstanceCounter<T>::counter_( 0U );
 
 } // namespace utiltest
 

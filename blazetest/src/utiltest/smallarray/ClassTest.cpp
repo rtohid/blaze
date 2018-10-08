@@ -1,7 +1,7 @@
 //=================================================================================================
 /*!
-//  \file blazetest/utiltest/ThrowingResource.h
-//  \brief Header file for the ThrowingResource class
+//  \file src/utiltest/smallarray/ClassTest.cpp
+//  \brief Source file for the SmallArray class test
 //
 //  Copyright (C) 2012-2018 Klaus Iglberger - All Rights Reserved
 //
@@ -32,74 +32,37 @@
 */
 //=================================================================================================
 
-#ifndef _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
-#define _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
-
 
 //*************************************************************************************************
 // Includes
 //*************************************************************************************************
 
-#include <stdexcept>
-#include <blaze/util/StaticAssert.h>
-#include <blaze/util/typetraits/AlignmentOf.h>
-#include <blazetest/utiltest/InstanceCounter.h>
+#include <cstdlib>
+#include <iostream>
+#include <blazetest/utiltest/smallarray/ClassTest.h>
 
-
-namespace blazetest {
-
-namespace utiltest {
 
 //=================================================================================================
 //
-//  CLASS DEFINITION
+//  MAIN FUNCTION
 //
 //=================================================================================================
 
 //*************************************************************************************************
-/*!\brief Implementation of an instance counted resource that throws during construction.
-//
-// The ThrowingResource class represents an important resource for testing purposes. It is instance
-// counted via the InstanceCounter class and guaranteed to be 16-bit aligned. Additionally, it
-// throws an exception during the construction of the 7th instance.
-*/
-class alignas( 16UL ) ThrowingResource
-   : public InstanceCounter<ThrowingResource>
+int main()
 {
- public:
-   //**Constructors********************************************************************************
-   /*!\name Constructors */
-   //@{
-   inline ThrowingResource();
-   //@}
-   //**********************************************************************************************
-};
-//*************************************************************************************************
+   std::cout << "   Running SmallArray class test..." << std::endl;
 
+   try
+   {
+      RUN_SMALLARRAY_CLASS_TEST;
+   }
+   catch( std::exception& ex ) {
+      std::cerr << "\n\n ERROR DETECTED during SmallArray class test:\n"
+                << ex.what() << "\n";
+      return EXIT_FAILURE;
+   }
 
-
-
-//=================================================================================================
-//
-//  CONSTRUCTOR
-//
-//=================================================================================================
-
-//*************************************************************************************************
-/*!\brief The constructor of ThrowingResource.
-*/
-inline ThrowingResource::ThrowingResource()
-   : InstanceCounter<ThrowingResource>()
-{
-   BLAZE_STATIC_ASSERT( blaze::AlignmentOf<ThrowingResource>::value == 16UL );
-
-   if( getCount() == 7U )
-      throw std::runtime_error( "Runtime error for testing purposes" );
+   return EXIT_SUCCESS;
 }
 //*************************************************************************************************
-
-} // namespace utiltest
-
-} // namespace blazetest
-
-#endif

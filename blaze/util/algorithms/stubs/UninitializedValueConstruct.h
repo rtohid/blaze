@@ -1,7 +1,7 @@
 //=================================================================================================
 /*!
-//  \file blazetest/utiltest/ThrowingResource.h
-//  \brief Header file for the ThrowingResource class
+//  \file blaze/util/algorithms/stubs/UninitializedValueConstruct.h
+//  \brief Headerfile for the stub for the std::uninitialized_value_construct algorithm
 //
 //  Copyright (C) 2012-2018 Klaus Iglberger - All Rights Reserved
 //
@@ -32,74 +32,58 @@
 */
 //=================================================================================================
 
-#ifndef _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
-#define _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
+#ifndef _BLAZE_UTIL_ALGORITHMS_STUBS_UNINITIALIZEDVALUECONSTRUCT_H_
+#define _BLAZE_UTIL_ALGORITHMS_STUBS_UNINITIALIZEDVALUECONSTRUCT_H_
 
 
 //*************************************************************************************************
 // Includes
 //*************************************************************************************************
 
-#include <stdexcept>
-#include <blaze/util/StaticAssert.h>
-#include <blaze/util/typetraits/AlignmentOf.h>
-#include <blazetest/utiltest/InstanceCounter.h>
+#include <iterator>
+#include <memory>
 
 
-namespace blazetest {
-
-namespace utiltest {
+namespace std {
 
 //=================================================================================================
 //
-//  CLASS DEFINITION
+//  UNINITIALIZED_VALUE_CONSTRUCT ALGORITHM
 //
 //=================================================================================================
 
 //*************************************************************************************************
-/*!\brief Implementation of an instance counted resource that throws during construction.
+/*!\brief Value constructs elements in the given range.
+// \ingroup algorithms
 //
-// The ThrowingResource class represents an important resource for testing purposes. It is instance
-// counted via the InstanceCounter class and guaranteed to be 16-bit aligned. Additionally, it
-// throws an exception during the construction of the 7th instance.
+// \param first Iterator to the first element of the range.
+// \param last Iterator to the element one past the last element of the range.
+// \return void
+//
+// This function value constructs elements in the given range \f$ [first,last) \f$. The range
+// is assumed to be uninitialized.
 */
-class alignas( 16UL ) ThrowingResource
-   : public InstanceCounter<ThrowingResource>
+template< class ForwardIt >
+void uninitialized_value_construct( ForwardIt first, ForwardIt last )
 {
- public:
-   //**Constructors********************************************************************************
-   /*!\name Constructors */
-   //@{
-   inline ThrowingResource();
-   //@}
-   //**********************************************************************************************
-};
-//*************************************************************************************************
+   using Value = typename std::iterator_traits<ForwardIt>::value_type;
 
+   ForwardIt current( first );
 
-
-
-//=================================================================================================
-//
-//  CONSTRUCTOR
-//
-//=================================================================================================
-
-//*************************************************************************************************
-/*!\brief The constructor of ThrowingResource.
-*/
-inline ThrowingResource::ThrowingResource()
-   : InstanceCounter<ThrowingResource>()
-{
-   BLAZE_STATIC_ASSERT( blaze::AlignmentOf<ThrowingResource>::value == 16UL );
-
-   if( getCount() == 7U )
-      throw std::runtime_error( "Runtime error for testing purposes" );
+   try {
+      for( ; current!=last; ++current ) {
+         ::new ( std::addressof( *current ) ) Value();
+      }
+   }
+   catch (...) {
+      for( ; first!=current; ++first ) {
+         first->~Value();
+      }
+      throw;
+   }
 }
 //*************************************************************************************************
 
-} // namespace utiltest
-
-} // namespace blazetest
+} // namespace std
 
 #endif

@@ -1,7 +1,7 @@
 //=================================================================================================
 /*!
-//  \file blazetest/utiltest/ThrowingResource.h
-//  \brief Header file for the ThrowingResource class
+//  \file blaze/util/algorithms/stubs/UninitializedMove.h
+//  \brief Headerfile for the stub for the std::uninitialized_move algorithm
 //
 //  Copyright (C) 2012-2018 Klaus Iglberger - All Rights Reserved
 //
@@ -32,74 +32,62 @@
 */
 //=================================================================================================
 
-#ifndef _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
-#define _BLAZETEST_UTILTEST_THROWINGRESOURCE_H_
+#ifndef _BLAZE_UTIL_ALGORITHMS_STUBS_UNINITIALIZEDMOVE_H_
+#define _BLAZE_UTIL_ALGORITHMS_STUBS_UNINITIALIZEDMOVE_H_
 
 
 //*************************************************************************************************
 // Includes
 //*************************************************************************************************
 
-#include <stdexcept>
-#include <blaze/util/StaticAssert.h>
-#include <blaze/util/typetraits/AlignmentOf.h>
-#include <blazetest/utiltest/InstanceCounter.h>
+#include <iterator>
+#include <memory>
 
 
-namespace blazetest {
-
-namespace utiltest {
+namespace std {
 
 //=================================================================================================
 //
-//  CLASS DEFINITION
+//  UNINITIALIZED_MOVE ALGORITHM
 //
 //=================================================================================================
 
 //*************************************************************************************************
-/*!\brief Implementation of an instance counted resource that throws during construction.
+/*!\brief Move the elements from the given source range to the uninitialized destination range.
+// \ingroup algorithms
 //
-// The ThrowingResource class represents an important resource for testing purposes. It is instance
-// counted via the InstanceCounter class and guaranteed to be 16-bit aligned. Additionally, it
-// throws an exception during the construction of the 7th instance.
+// \param first Iterator to the first element of the source range.
+// \param last Iterator to the element one past the last element of the source range.
+// \param dest Iterator to the first element of the destination range.
+// \return Output iterator to the element one past the last copied element.
+//
+// This function moves the elements from the source range \f$ [first,last) \f$ to the specified
+// destination range. The destination range is assumed to be uninitialized, i.e. the elements
+// are move constructed.
 */
-class alignas( 16UL ) ThrowingResource
-   : public InstanceCounter<ThrowingResource>
+template< typename InputIt
+        , typename ForwardIt >
+ForwardIt uninitialized_move( InputIt first, InputIt last, ForwardIt dest )
 {
- public:
-   //**Constructors********************************************************************************
-   /*!\name Constructors */
-   //@{
-   inline ThrowingResource();
-   //@}
-   //**********************************************************************************************
-};
-//*************************************************************************************************
+   using Value = typename std::iterator_traits<ForwardIt>::value_type;
 
+   ForwardIt current( dest );
 
-
-
-//=================================================================================================
-//
-//  CONSTRUCTOR
-//
-//=================================================================================================
-
-//*************************************************************************************************
-/*!\brief The constructor of ThrowingResource.
-*/
-inline ThrowingResource::ThrowingResource()
-   : InstanceCounter<ThrowingResource>()
-{
-   BLAZE_STATIC_ASSERT( blaze::AlignmentOf<ThrowingResource>::value == 16UL );
-
-   if( getCount() == 7U )
-      throw std::runtime_error( "Runtime error for testing purposes" );
+   try {
+      for( ; first!=last; ++first, ++current ) {
+         ::new ( std::addressof( *current ) ) Value( std::move( *first ) );
+      }
+      return current;
+   }
+   catch( ... ) {
+      for( ; dest != current; ++dest ) {
+         dest->~Value();
+      }
+      throw;
+   }
 }
 //*************************************************************************************************
 
-} // namespace utiltest
-
-} // namespace blazetest
+} // namespace std
 
 #endif
