@@ -113,19 +113,18 @@ void hpxAssign( DenseVector<VT1,TF1>& lhs, const DenseVector<VT2,TF2>& rhs, OP o
    const bool rhsAligned( (~rhs).isAligned() );
 
    const size_t threads      ( getNumThreads() );
-   const size_t addon        ( ( ( (~lhs).size() % threads ) != 0UL )? 1UL : 0UL );
-   const size_t equalShare   ( (~lhs).size() / threads + addon );
+   const size_t cache_size   (8UL);
+   const size_t addon        ( ( ( (~lhs).size() % cache_size ) != 0UL )? 1UL : 0UL );
+   const size_t equalShare   ( (~lhs).size() / cache_size + addon );
    const size_t rest         ( equalShare & ( SIMDSIZE - 1UL ) );
    const size_t sizePerThread( ( simdEnabled && rest )?( equalShare - rest + SIMDSIZE ):( equalShare ) );
 
-   for_loop( par, size_t(0), threads, [&](int i)
-   {
-      const size_t index( i*sizePerThread );
+   hpx::parallel::execution::dynamic_chunk_size ds(BLAZE_HPX_VECTOR_CHUNK_SIZE);
+   for_loop( par.with(ds), size_t(0), equalShare, [&](int i)
+      {
+      const size_t index( i * cache_size);
 
-      if( index >= (~lhs).size() )
-         return;
-
-      const size_t size( min( sizePerThread, (~lhs).size() - index ) );
+      const size_t size( min( cache_size, (~lhs).size() - index ) );
 
       if( simdEnabled && lhsAligned && rhsAligned ) {
          auto       target( subvector<aligned>( ~lhs, index, size, unchecked ) );
