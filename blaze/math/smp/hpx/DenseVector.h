@@ -41,6 +41,8 @@
 //*************************************************************************************************
 
 #include <hpx/include/parallel_for_loop.hpp>
+#include <hpx/include/parallel_executor_parameters.hpp>
+#include <blaze/config/HPX.h>
 #include <blaze/math/Aliases.h>
 #include <blaze/math/constraints/SMPAssignable.h>
 #include <blaze/math/expressions/DenseVector.h>
@@ -113,7 +115,7 @@ void hpxAssign( DenseVector<VT1,TF1>& lhs, const DenseVector<VT2,TF2>& rhs, OP o
    const bool rhsAligned( (~rhs).isAligned() );
 
    const size_t threads      ( getNumThreads() );
-   const size_t cache_size   (8UL);
+   const size_t cache_size   (32UL);
    const size_t addon        ( ( ( (~lhs).size() % cache_size ) != 0UL )? 1UL : 0UL );
    const size_t equalShare   ( (~lhs).size() / cache_size + addon );
    const size_t rest         ( equalShare & ( SIMDSIZE - 1UL ) );
@@ -121,6 +123,9 @@ void hpxAssign( DenseVector<VT1,TF1>& lhs, const DenseVector<VT2,TF2>& rhs, OP o
 
    hpx::parallel::execution::dynamic_chunk_size ds(BLAZE_HPX_VECTOR_CHUNK_SIZE);
    for_loop( par.with(ds), size_t(0), equalShare, [&](int i)
+     
+//     hpx::parallel::execution::static_chunk_size cs;   
+//     for_loop( par.with(cs), size_t(0), equalShare, [&](int i)   
       {
       const size_t index( i * cache_size);
 
