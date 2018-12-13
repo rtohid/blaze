@@ -39,13 +39,19 @@
 //*************************************************************************************************
 // Includes
 //*************************************************************************************************
-
 #include <hpx/include/parallel_for_loop.hpp>
+#include <hpx/include/parallel_executor_parameters.hpp>
+#include <blaze/config/HPX.h>
 #include <blaze/math/Aliases.h>
 #include <blaze/math/AlignmentFlag.h>
 #include <blaze/math/constraints/SMPAssignable.h>
 #include <blaze/math/expressions/DenseMatrix.h>
 #include <blaze/math/expressions/SparseMatrix.h>
+#include <blaze/math/functors/AddAssign.h>
+#include <blaze/math/functors/Assign.h>
+#include <blaze/math/functors/MultAssign.h>
+#include <blaze/math/functors/SchurAssign.h>
+#include <blaze/math/functors/SubAssign.h>
 #include <blaze/math/simd/SIMDTrait.h>
 #include <blaze/math/smp/SerialSection.h>
 #include <blaze/math/smp/ThreadMapping.h>
@@ -111,7 +117,7 @@ void hpxAssign( DenseMatrix<MT1,SO1>& lhs, const DenseMatrix<MT2,SO2>& rhs, OP o
    const bool rhsAligned( (~rhs).isAligned() );
 
    const size_t threads    ( getNumThreads() );
-   const ThreadMapping threadmap( createThreadMapping( threads, ~rhs ) );
+//   const ThreadMapping threadmap( createThreadMapping( threads, ~rhs ) );
 
    const size_t block_size_row (256UL);
    const size_t block_size_col (256UL);
@@ -124,18 +130,18 @@ void hpxAssign( DenseMatrix<MT1,SO1>& lhs, const DenseMatrix<MT2,SO2>& rhs, OP o
    const size_t equalShare2( (~rhs).columns() / block_size_col + addon2 );
    const size_t rest2      ( equalShare2 & ( SIMDSIZE - 1UL ) );
    const size_t colsPerThread( ( simdEnabled && rest2 )?( equalShare2 - rest2 + SIMDSIZE ):( equalShare2 ) );
-   
+
    hpx::parallel::execution::dynamic_chunk_size ds(BLAZE_HPX_VECTOR_CHUNK_SIZE);
    for_loop( par.with(ds), size_t(0), equalShare1 * equalShare2, [&](int i)
    {
-      const size_t row   ( i / euqalShare1 );
-      const size_t column( i % equalShare2 );
+      const size_t row   ( ( i / equalShare1) * block_size_row );
+      const size_t column( ( i % equalShare2 ) * block_size_col);
 
       if( row >= (~rhs).rows() || column >= (~rhs).columns() )
          return;
 
       const size_t m( min( block_size_row, (~rhs).rows()    - row    ) );
-      const size_t n( min( block_size_column, (~rhs).columns() - column ) );
+      const size_t n( min( block_size_col, (~rhs).columns() - column ) );
 
       if( simdEnabled && lhsAligned && rhsAligned ) {
          auto       target( submatrix<aligned>( ~lhs, row, column, m, n ) );
