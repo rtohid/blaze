@@ -119,8 +119,8 @@ void hpxAssign( DenseMatrix<MT1,SO1>& lhs, const DenseMatrix<MT2,SO2>& rhs, OP o
    const size_t threads    ( getNumThreads() );
 //   const ThreadMapping threadmap( createThreadMapping( threads, ~rhs ) );
 
-   const size_t block_size_row (256UL);
-   const size_t block_size_col (256UL);
+   const size_t block_size_row (BLAZE_HPX_MATRIX_BLOCK_SIZE);
+   const size_t block_size_col (BLAZE_HPX_MATRIX_BLOCK_SIZE);
    const size_t addon1     ( ( ( (~rhs).rows() % block_size_row ) != 0UL )? 1UL : 0UL );
    const size_t equalShare1( (~rhs).rows() / block_size_row + addon1 );
    const size_t rest1      ( equalShare1 & ( SIMDSIZE - 1UL ) );
