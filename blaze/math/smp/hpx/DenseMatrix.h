@@ -119,8 +119,8 @@ void hpxAssign( DenseMatrix<MT1,SO1>& lhs, const DenseMatrix<MT2,SO2>& rhs, OP o
    const size_t threads    ( getNumThreads() );
 //   const ThreadMapping threadmap( createThreadMapping( threads, ~rhs ) );
 
-   const size_t block_size_row (BLAZE_HPX_MATRIX_BLOCK_SIZE);
-   const size_t block_size_col (BLAZE_HPX_MATRIX_BLOCK_SIZE);
+   const size_t block_size_row (BLAZE_HPX_MATRIX_BLOCK_SIZE_ROW);
+   const size_t block_size_col (BLAZE_HPX_MATRIX_BLOCK_SIZE_COLUMN);
    const size_t addon1     ( ( ( (~rhs).rows() % block_size_row ) != 0UL )? 1UL : 0UL );
    const size_t equalShare1( (~rhs).rows() / block_size_row + addon1 );
    const size_t rest1      ( equalShare1 & ( SIMDSIZE - 1UL ) );
@@ -131,7 +131,7 @@ void hpxAssign( DenseMatrix<MT1,SO1>& lhs, const DenseMatrix<MT2,SO2>& rhs, OP o
    const size_t rest2      ( equalShare2 & ( SIMDSIZE - 1UL ) );
    const size_t colsPerThread( ( simdEnabled && rest2 )?( equalShare2 - rest2 + SIMDSIZE ):( equalShare2 ) );
 
-   hpx::parallel::execution::dynamic_chunk_size ds(BLAZE_HPX_VECTOR_CHUNK_SIZE);
+   hpx::parallel::execution::dynamic_chunk_size ds(BLAZE_HPX_MATRIX_CHUNK_SIZE);
    for_loop( par.with(ds), size_t(0), equalShare1 * equalShare2, [&](int i)
    {
       const size_t row   ( ( i / equalShare1) * block_size_row );
