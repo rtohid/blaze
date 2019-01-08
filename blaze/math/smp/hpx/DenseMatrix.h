@@ -117,20 +117,18 @@ void hpxAssign( DenseMatrix<MT1,SO1>& lhs, const DenseMatrix<MT2,SO2>& rhs, OP o
    const bool rhsAligned( (~rhs).isAligned() );
 
    const size_t threads    ( getNumThreads() );
-//   const ThreadMapping threadmap( createThreadMapping( threads, ~rhs ) );
-
    const size_t block_size_row ( BLAZE_HPX_MATRIX_BLOCK_SIZE_ROW > (~rhs).rows() ? (~rhs).rows() : BLAZE_HPX_MATRIX_BLOCK_SIZE_ROW );
    const size_t block_size_col ( BLAZE_HPX_MATRIX_BLOCK_SIZE_COLUMN > (~rhs).columns() ? (~rhs).columns() : BLAZE_HPX_MATRIX_BLOCK_SIZE_COLUMN );
-   const size_t addon1     ( ( ( (~rhs).rows() % block_size_row ) != 0UL )? 1UL : 0UL );
-   const size_t equalShare1( (~rhs).rows() / block_size_row + addon1 );
+
    const size_t rest1      ( block_size_row & ( SIMDSIZE - 1UL ) );
    const size_t rowsPerIter( ( simdEnabled && rest1 )?( block_size_row - rest1 + SIMDSIZE ):( block_size_row ) );
+   const size_t addon1     ( ( ( (~rhs).rows() % rowsPerIter ) != 0UL )? 1UL : 0UL );
+   const size_t equalShare1( (~rhs).rows() / rowsPerIter + addon1 );
 
-   const size_t addon2     ( ( ( (~rhs).columns() % block_size_col ) != 0UL )? 1UL : 0UL );
-   const size_t equalShare2( (~rhs).columns() / block_size_col + addon2 );
    const size_t rest2      ( block_size_col & ( SIMDSIZE - 1UL ) );
    const size_t colsPerIter( ( simdEnabled && rest2 )?( block_size_col - rest2 + SIMDSIZE ):( block_size_col ) );
-
+   const size_t addon2     ( ( ( (~rhs).columns() % colsPerIter ) != 0UL )? 1UL : 0UL );
+   const size_t equalShare2( (~rhs).columns() / colsPerIter + addon2 );
 
    hpx::parallel::execution::dynamic_chunk_size ds(BLAZE_HPX_MATRIX_CHUNK_SIZE);
    for_loop( par.with(ds), size_t(0), equalShare1 * equalShare2, [&](int i)
@@ -167,6 +165,69 @@ void hpxAssign( DenseMatrix<MT1,SO1>& lhs, const DenseMatrix<MT2,SO2>& rhs, OP o
    } );
 }
 /*! \endcond */
+//void hpxAssign( DenseMatrix<MT1,SO1>& lhs, const DenseMatrix<MT2,SO2>& rhs, OP op )
+//{
+//   using hpx::parallel::for_loop;
+//   using hpx::parallel::execution::par;
+//
+//   BLAZE_FUNCTION_TRACE;
+//
+//   using ET1 = ElementType_t<MT1>;
+//   using ET2 = ElementType_t<MT2>;
+//
+//   constexpr bool simdEnabled( MT1::simdEnabled && MT2::simdEnabled && IsSIMDCombinable_v<ET1,ET2> );
+//   constexpr size_t SIMDSIZE( SIMDTrait< ElementType_t<MT1> >::size );
+//
+//   const bool lhsAligned( (~lhs).isAligned() );
+//   const bool rhsAligned( (~rhs).isAligned() );
+//
+//   const size_t threads    ( getNumThreads() );
+//   const ThreadMapping threadmap( createThreadMapping( threads, ~rhs ) );
+//
+//   const size_t addon1     ( ( ( (~rhs).rows() % threadmap.first ) != 0UL )? 1UL : 0UL );
+//   const size_t equalShare1( (~rhs).rows() / threadmap.first + addon1 );
+//   const size_t rest1      ( equalShare1 & ( SIMDSIZE - 1UL ) );
+//   const size_t rowsPerThread( ( simdEnabled && rest1 )?( equalShare1 - rest1 + SIMDSIZE ):( equalShare1 ) );
+//
+//   const size_t addon2     ( ( ( (~rhs).columns() % threadmap.second ) != 0UL )? 1UL : 0UL );
+//   const size_t equalShare2( (~rhs).columns() / threadmap.second + addon2 );
+//   const size_t rest2      ( equalShare2 & ( SIMDSIZE - 1UL ) );
+//   const size_t colsPerThread( ( simdEnabled && rest2 )?( equalShare2 - rest2 + SIMDSIZE ):( equalShare2 ) );
+//
+//   for_loop( par, size_t(0), threads, [&](int i)
+//   {
+//      const size_t row   ( ( i / threadmap.second ) * rowsPerThread );
+//      const size_t column( ( i % threadmap.second ) * colsPerThread );
+//
+//      if( row >= (~rhs).rows() || column >= (~rhs).columns() )
+//         return;
+//
+//      const size_t m( min( rowsPerThread, (~rhs).rows()    - row    ) );
+//      const size_t n( min( colsPerThread, (~rhs).columns() - column ) );
+//
+//      if( simdEnabled && lhsAligned && rhsAligned ) {
+//         auto       target( submatrix<aligned>( ~lhs, row, column, m, n ) );
+//         const auto source( submatrix<aligned>( ~rhs, row, column, m, n ) );
+//         op( target, source );
+//      }
+//      else if( simdEnabled && lhsAligned ) {
+//         auto       target( submatrix<aligned>( ~lhs, row, column, m, n ) );
+//         const auto source( submatrix<unaligned>( ~rhs, row, column, m, n ) );
+//         op( target, source );
+//      }
+//      else if( simdEnabled && rhsAligned ) {
+//         auto       target( submatrix<unaligned>( ~lhs, row, column, m, n ) );
+//         const auto source( submatrix<aligned>( ~rhs, row, column, m, n ) );
+//         op( target, source );
+//      }
+//      else {
+//         auto       target( submatrix<unaligned>( ~lhs, row, column, m, n ) );
+//         const auto source( submatrix<unaligned>( ~rhs, row, column, m, n ) );
+//         op( target, source );
+//      }
+//   } );
+//}
+///*! \endcond */
 //*************************************************************************************************
 
 
